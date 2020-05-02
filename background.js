@@ -50,8 +50,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     //啟用 mark
     const js = 
     `
-      let hasHeader = document.getElementsByTagName('header').length > 0;
-      let header = document.createElement('header');
+      let header = document.createElement('div');
       let inputEle = document.createElement('input');
       let submitBtn = document.createElement('button');
       let clearBtn = document.createElement('button');
@@ -62,7 +61,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
       let markStyleName = 'extensionsMarkStyle'
       let style = document.createElement('style');
       style.type = 'text/css';
-      style.innerHTML = '.' + markStyleName + '{ border: red 5px solid !important; }';
+      style.innerHTML = '.' + markStyleName + '{ box-shadow: inset 0px 0px 0px 3px red !important; }';
       document.getElementsByTagName('head')[0].appendChild(style);
       
       // input Area
@@ -89,20 +88,16 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
       header.style['justify-content']='space-around';
       header.style.top = '0px';
       header.style.height = headerHeight + 'px';
-      header.style.width = window.innerWidth + 'px';
+      header.style.width = '100%';
+      header.style.zIndex = '99999999';
+      header.style.left = '0px';
+      
       header.style.backgroundColor = "#cafacf";
       header.style.color = "black";
       
-      // document.body Area
-      if (hasHeader) {
-        let headerElement = document.getElementsByTagName('header')[0];
-        headerElement.style.marginTop = headerHeight + 'px';
-        headerElement.append(header);
-      }
-      else {
-        document.body.style.marginTop = headerHeight + 'px';
-        document.body.append(header);
-      }
+      document.body.style.marginTop = headerHeight + 'px';
+      document.body.append(header);
+      
       
       window.scrollTo({
         top: 0,
@@ -113,13 +108,13 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
         const inputValue = inputEle.value.trim();
         if(inputValue) {
           try {
-          let target = document.body.querySelectorAll(inputValue);
+            let target = document.body.querySelectorAll(inputValue);
       
             if (target.length > 0) {
               target.forEach((element, index) => {
                 effectElementList.push(element);
                 if (extensionElementList.indexOf(element) !== -1) {
-                    return;
+                  return;
                 }
                 element.classList.add(markStyleName);
                 if (index === 0) {
@@ -137,35 +132,39 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
           catch (error) {
             alert('not found');
           }
-            
+      
         }
       
       });
-            
-            
+      
+      
       clearBtn.addEventListener('click', () => {
         let uniqueList = [...new Set(effectElementList)];
         uniqueList.forEach(element => {
-            element.classList.remove(markStyleName);
-        })
+          element.classList.remove(markStyleName);
+        });
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
       })
-            
-            
+      
+      
       function getCoords(elem) { // crossbrowser version
         var box = elem.getBoundingClientRect();
-    
+      
         var body = document.body;
         var docEl = document.documentElement;
-    
+      
         var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
         var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-    
+      
         var clientTop = docEl.clientTop || body.clientTop || 0;
         var clientLeft = docEl.clientLeft || body.clientLeft || 0;
-    
+      
         var top  = box.top +  scrollTop - clientTop;
         var left = box.left + scrollLeft - clientLeft;
-    
+      
         return { top: Math.round(top), left: Math.round(left) };
       }
     `;
